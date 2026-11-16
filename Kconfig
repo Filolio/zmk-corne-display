@@ -1,0 +1,29 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: MIT
+
+menuconfig ZMK_CORNE_DISPLAY
+    bool "Corne custom status screen"
+    depends on ZMK_DISPLAY
+    default y
+    select LV_USE_LABEL
+    imply LV_USE_THEME_MONO if LV_Z_BITS_PER_PIXEL=1
+    imply ZMK_WIDGET_LAYER_STATUS
+    imply ZMK_WIDGET_OUTPUT_STATUS
+    imply ZMK_WIDGET_PERIPHERAL_STATUS
+    help
+      Custom ZMK status screen for the Corne shield.
+
+      It keeps the standard widgets (output, layer, peripheral and
+      optional WPM) and replaces the battery widget with one that
+      draws the battery icon followed by the charge percentage.
+
+if ZMK_CORNE_DISPLAY
+
+config ZMK_CORNE_DISPLAY_BATTERY_PERCENT
+    bool "Show battery icon and percentage"
+    default y
+    help
+      Draw a battery icon and the numeric charge percentage of the
+      local half of the keyboard.
+
+endif # ZMK_CORNE_DISPLAY
