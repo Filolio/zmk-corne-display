@@ -19,6 +19,16 @@ menuconfig ZMK_CORNE_DISPLAY
 
 if ZMK_CORNE_DISPLAY
 
+config ZMK_CORNE_DISPLAY_ROTATED
+    bool "Rotate the screen for a vertically mounted OLED"
+    default y
+    select LV_FONT_MONTSERRAT_10
+    help
+      The 128x32 SSD1306 is mounted vertically on some Corne builds.
+      In that case the whole LVGL screen is rotated by 90 degrees:
+      the logical resolution becomes 32x128 and the framebuffer is
+      rotated back to the native 128x32 layout when flushed.
+
 config ZMK_CORNE_DISPLAY_BATTERY_PERCENT
     bool "Show battery icon and percentage"
     default y

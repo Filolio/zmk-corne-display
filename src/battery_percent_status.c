@@ -27,38 +27,42 @@ struct battery_percent_status_state {
 #endif
 };
 
-static void set_battery_symbol(lv_obj_t *label, struct battery_percent_status_state state) {
-    const char *icon;
-
-    if (state.level > 95) {
-        icon = LV_SYMBOL_BATTERY_FULL;
-    } else if (state.level > 65) {
-        icon = LV_SYMBOL_BATTERY_3;
-    } else if (state.level > 35) {
-        icon = LV_SYMBOL_BATTERY_2;
-    } else if (state.level > 5) {
-        icon = LV_SYMBOL_BATTERY_1;
+static const char *battery_symbol(uint8_t level) {
+    if (level > 95) {
+        return LV_SYMBOL_BATTERY_FULL;
+    } else if (level > 65) {
+        return LV_SYMBOL_BATTERY_3;
+    } else if (level > 35) {
+        return LV_SYMBOL_BATTERY_2;
+    } else if (level > 5) {
+        return LV_SYMBOL_BATTERY_1;
     } else {
-        icon = LV_SYMBOL_BATTERY_EMPTY;
+        return LV_SYMBOL_BATTERY_EMPTY;
     }
+}
 
-    char text[24] = {};
+static void set_battery_status(lv_obj_t *value, lv_obj_t *icon,
+                               struct battery_percent_status_state state) {
+    char text[8] = {};
+
+    snprintf(text, sizeof(text), "%u", state.level);
+    lv_label_set_text(value, text);
 
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
     if (state.usb_present) {
-        snprintf(text, sizeof(text), "%s %s %u", LV_SYMBOL_CHARGE, icon, state.level);
-    } else
-#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
-    {
-        snprintf(text, sizeof(text), "%s %u", icon, state.level);
+        lv_label_set_text(icon, LV_SYMBOL_CHARGE);
+        return;
     }
+#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
 
-    lv_label_set_text(label, text);
+    lv_label_set_text(icon, battery_symbol(state.level));
 }
 
 static void battery_percent_status_update_cb(struct battery_percent_status_state state) {
     struct zmk_widget_battery_percent_status *widget;
-    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) { set_battery_symbol(widget->obj, state); }
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        set_battery_status(widget->obj, widget->icon, state);
+    }
 }
 
 static struct battery_percent_status_state
@@ -84,9 +88,10 @@ ZMK_SUBSCRIPTION(widget_battery_percent_status, zmk_usb_conn_state_changed);
 int zmk_widget_battery_percent_status_init(struct zmk_widget_battery_percent_status *widget,
                                            lv_obj_t *parent) {
     widget->obj = lv_label_create(parent);
-
-    /* Текст заряда всегда в одну строку, без переносов и поворотов. */
     lv_label_set_long_mode(widget->obj, LV_LABEL_LONG_CLIP);
+
+    widget->icon = lv_label_create(parent);
+    lv_label_set_long_mode(widget->icon, LV_LABEL_LONG_CLIP);
 
     sys_slist_append(&widgets, &widget->node);
 
@@ -96,4 +101,9 @@ int zmk_widget_battery_percent_status_init(struct zmk_widget_battery_percent_sta
 
 lv_obj_t *zmk_widget_battery_percent_status_obj(struct zmk_widget_battery_percent_status *widget) {
     return widget->obj;
+}
+
+lv_obj_t *zmk_widget_battery_percent_status_icon_obj(
+    struct zmk_widget_battery_percent_status *widget) {
+    return widget->icon;
 }
