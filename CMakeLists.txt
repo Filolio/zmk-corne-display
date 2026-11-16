@@ -4,7 +4,6 @@
 if(CONFIG_ZMK_CORNE_DISPLAY)
   zephyr_library()
   zephyr_library_sources(src/battery_percent_status.c)
-  zephyr_library_sources(src/display_rotation.c)
   zephyr_library_sources(src/status_screen.c)
   # ZMK добавляет свой app/include только таргету app, поэтому модулю
   # нужно подключить пути к заголовкам ZMK явно.
