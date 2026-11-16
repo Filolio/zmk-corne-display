@@ -1,7 +1,7 @@
 # zmk-corne-display
 
 Небольшой ZMK-модуль для Corne, который заменяет стандартный виджет
-батареи на экране OLED на «иконка батареи + процент заряда».
+батареи на экране OLED на «иконка батареи + число заряда» (без знака `%`).
 
 Каждая половина клавиатуры показывает заряд **своего** аккумулятора:
 левый экран — левой половины, правый — правой.
@@ -38,6 +38,16 @@ manifest:
 ```conf
 CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
 CONFIG_ZMK_CORNE_DISPLAY=y
+
+# Важно: при CUSTOM ZMK не применяет умолчания встроенного экрана,
+# поэтому их нужно задать явно.
+CONFIG_LV_Z_MEM_POOL_SIZE=8192
+CONFIG_LV_FONT_DEFAULT_MONTSERRAT_16=y
+CONFIG_LV_FONT_MONTSERRAT_16=y
+CONFIG_LV_FONT_MONTSERRAT_12=y
+CONFIG_LV_USE_THEME_MONO=y
+CONFIG_ZMK_DISPLAY_WORK_QUEUE_DEDICATED=y
+CONFIG_ZMK_DISPLAY_DEDICATED_THREAD_STACK_SIZE=4096
 ```
 
 ## Настройки

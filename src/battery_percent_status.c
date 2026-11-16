@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <string.h>
+#include <stdio.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -28,32 +28,30 @@ struct battery_percent_status_state {
 };
 
 static void set_battery_symbol(lv_obj_t *label, struct battery_percent_status_state state) {
-    char text[24] = {};
+    const char *icon;
 
-    uint8_t level = state.level;
+    if (state.level > 95) {
+        icon = LV_SYMBOL_BATTERY_FULL;
+    } else if (state.level > 65) {
+        icon = LV_SYMBOL_BATTERY_3;
+    } else if (state.level > 35) {
+        icon = LV_SYMBOL_BATTERY_2;
+    } else if (state.level > 5) {
+        icon = LV_SYMBOL_BATTERY_1;
+    } else {
+        icon = LV_SYMBOL_BATTERY_EMPTY;
+    }
+
+    char text[24] = {};
 
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
     if (state.usb_present) {
-        strcat(text, LV_SYMBOL_CHARGE " ");
-    }
+        snprintf(text, sizeof(text), "%s %s %u", LV_SYMBOL_CHARGE, icon, state.level);
+    } else
 #endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
-
-    /* Battery icon, followed by the numeric percentage. */
-    if (level > 95) {
-        strcat(text, LV_SYMBOL_BATTERY_FULL);
-    } else if (level > 65) {
-        strcat(text, LV_SYMBOL_BATTERY_3);
-    } else if (level > 35) {
-        strcat(text, LV_SYMBOL_BATTERY_2);
-    } else if (level > 5) {
-        strcat(text, LV_SYMBOL_BATTERY_1);
-    } else {
-        strcat(text, LV_SYMBOL_BATTERY_EMPTY);
+    {
+        snprintf(text, sizeof(text), "%s %u", icon, state.level);
     }
-
-    char perc[8] = {};
-    snprintf(perc, sizeof(perc), " %u%%", level);
-    strcat(text, perc);
 
     lv_label_set_text(label, text);
 }
@@ -86,6 +84,9 @@ ZMK_SUBSCRIPTION(widget_battery_percent_status, zmk_usb_conn_state_changed);
 int zmk_widget_battery_percent_status_init(struct zmk_widget_battery_percent_status *widget,
                                            lv_obj_t *parent) {
     widget->obj = lv_label_create(parent);
+
+    /* Текст заряда всегда в одну строку, без переносов и поворотов. */
+    lv_label_set_long_mode(widget->obj, LV_LABEL_LONG_CLIP);
 
     sys_slist_append(&widgets, &widget->node);
 
